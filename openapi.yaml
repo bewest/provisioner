@@ -1,0 +1,206 @@
+openapi: 3.0.0
+servers:
+  - url: 'http://p0.internal.diabetes.watch'
+info:
+  description: >-
+    Manage hosted databases and associated sites.
+    You can learn more abou [provisioner](https://github.com/bewest/provisioner)
+  version: 0.0.1
+  title: Provisioner DB API
+  termsOfService: 'http://swagger.io/terms/'
+  contact:
+    email: bewest@gmail.com
+  license:
+    name: BSD 3
+tags:
+  - name: cluster
+    description: Manages processes by cluster.
+  - name: proc
+    description: Access to proc managed by cluster.
+  - name: env
+    description: Environment for a process.
+  - name: db 
+    description: Environment for a process.
+  - name: account
+    description: Environment for a process.
+  - name: sites 
+    description: Environment for a process.
+paths:
+  /dbs:
+    get:
+      tags:
+        - db
+      summary: Get list of managed dbs.
+      description: JSON description of all currently managed dbs.
+      parameters: []
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Database'
+        '400':
+          description: Invalid status value
+  '/dbs/{name}':
+    get:
+      tags:
+        - db
+      summary: Running database by name.
+      description: Returns details of a database by `name`.
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Database'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Database not found
+      parameters: []
+  '/accounts':
+    get:
+      tags:
+        - account 
+      summary: Get list of accounts.
+      description: >-
+        Returns description of all db accounts.
+    post:
+      tags:
+        - account 
+      summary: Create new managed database account.
+      description: >-
+        Returns description of all db accounts.
+  '/accounts/{account}':
+    get:
+      tags:
+        - account 
+      summary: Get accounts by account identifier.
+      description: >-
+         Get one db accounts.
+    delete:
+      tags:
+        - account 
+      summary: Delete accounts by account identifier.
+      description: >-
+         Delete one db account.
+  '/accounts/{account}/dbs':
+    get:
+      tags:
+        - account 
+      summary: Get all dbs for accounts by account identifier.
+      description: >-
+         Get all dbs associated with account.
+  '/accounts/{account}/users':
+    get:
+      tags:
+        - account 
+        - user
+      summary: Get list of managed db users for associated account.
+      description: >-
+         Get list of managed db users for associated account.
+    post:
+      tags:
+        - account 
+        - user
+      summary: Create a new managed db users for associated account.
+      description: >-
+         Create a new managed db user for associated account.
+  '/accounts/{account}/users/{user}':
+    get:
+      tags:
+        - account 
+        - user
+      summary: Get managed db user by id for associated account.
+      description: >-
+         Get managed db user by id for associated account.
+    delete:
+      tags:
+        - account 
+        - user
+      summary: Delete managed db user by id for associated account.
+      description: >-
+         Delete managed db user by id for associated account.
+    post:
+      tags:
+        - account 
+        - user
+      summary: Update a managed db user by id for associated account.
+      description: >-
+         Update a managed db user by id for associated account.
+  '/accounts/{account}/sites':
+    get:
+      tags:
+        - account 
+        - site
+      summary: Get list of managed sites for associated account.
+      description: >-
+         Get list of managed sites for associated account.
+    post:
+      tags:
+        - account 
+        - site
+      summary: Create a new managed site for associated account.
+      description: >-
+         Create a new managed site for associated account.
+  '/accounts/{account}/sites/{site}':
+    get:
+      tags:
+        - account 
+        - site
+      summary: Get managed site by id for associated account.
+      description: >-
+         Get managed site by id for associated account.
+    delete:
+      tags:
+        - account 
+        - site
+      summary: Delete managed site by id for associated account.
+      description: >-
+         Delete managed site by id for associated account.
+    post:
+      tags:
+        - account 
+        - site
+      summary: Update a managed site by id for associated account.
+      description: >-
+         Update a managed site by id for associated account.
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Site'
+
+      parameters: []
+
+  description: See AsyncAPI example
+  url: 'https://mermade.github.io/shins/asyncapi.html'
+components:
+  schemas:
+    Proc:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        state:
+          type: string
+        isDead:
+          type: boolean
+        custom_env:
+          type: object
+
+
+  links: {}
+  callbacks: {}
+security: []
