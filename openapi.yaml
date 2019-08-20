@@ -13,16 +13,16 @@ info:
   license:
     name: BSD 3
 tags:
-  - name: cluster
-    description: Manages processes by cluster.
-  - name: proc
-    description: Access to proc managed by cluster.
-  - name: env
-    description: Environment for a process.
-  - name: db 
-    description: Environment for a process.
   - name: account
     description: Environment for a process.
+  - name: cluster
+    description: Manages processes by cluster.
+  - name: db 
+    description: Environment for a process.
+  - name: env
+    description: Environment for a process.
+  - name: proc
+    description: Access to proc managed by cluster.
   - name: site
     description: Environment for a process.
   - name: user
@@ -62,10 +62,11 @@ paths:
           description: Invalid ID supplied
         '404':
           description: Database not found
-      depreceated: true
+      deprecated: true
       parameters:
         - in: path
           description: "Name of managed database."
+          required: true
           name: name
           schema:
             type: string
@@ -77,6 +78,9 @@ paths:
       operationId: get_accounts_list
       description: >-
         Returns description of all db accounts.
+      responses:
+        '200':
+          description: successful operation
     post:
       tags:
         - account 
@@ -84,6 +88,9 @@ paths:
       operationId: create_new_db_with_account
       description: >-
         Returns description of all db accounts.
+      responses:
+        '200':
+          description: successful operation
   '/accounts/{account}':
     get:
       tags:
@@ -95,9 +102,13 @@ paths:
       parameters:
         - in: path
           name: account
+          required: true
           description: "Account name"
           schema:
             type: string
+      responses:
+        '200':
+          description: successful operation
     delete:
       tags:
         - account 
@@ -109,13 +120,18 @@ paths:
         - in: path
           name: account
           description: "Account name"
+          required: true
           schema:
             type: string
+      responses:
+        '200':
+          description: successful operation
   '/accounts/{account}/dbs':
     parameters:
       - in: path
         name: account
         description: "Account name"
+        required: true
         schema:
           type: string
     get:
@@ -125,11 +141,15 @@ paths:
       operationId: get_dbs_for_account
       description: >-
          Get all dbs associated with account.
+      responses:
+        '200':
+          description: successful operation
   '/accounts/{account}/users':
     parameters:
       - in: path
         description: "Account ID. Must be valid mongo objectID"
         name: account
+        required: true
         schema:
           type: string
     get:
@@ -140,6 +160,9 @@ paths:
       operationId: get_users_for_account
       description: >-
          Get list of managed db users for associated account.
+      responses:
+        '200':
+          description: successful operation
     post:
       tags:
         - account 
@@ -148,6 +171,9 @@ paths:
       operationId: create_user_for_account
       description: >-
          Create a new managed db user for associated account.
+      responses:
+        '200':
+          description: successful operation
   '/accounts/{account}/users/{user}':
     parameters:
       - in: path
@@ -155,11 +181,13 @@ paths:
         name: account
         schema:
           type: string
+        required: true
       - in: path
         description: "User ID. Must be valid mongo objectID"
         name: user 
         schema:
           type: string
+        required: true
     get:
       tags:
         - account 
@@ -168,6 +196,9 @@ paths:
       operationId: get_user_for_account_by_id
       description: >-
          Get managed db user by id for associated account.
+      responses:
+        '200':
+          description: successful operation
     delete:
       tags:
         - account 
@@ -176,6 +207,9 @@ paths:
       description: >-
          Delete managed db user by id for associated account.
       operationId: delete_user_for_account_by_id
+      responses:
+        '200':
+          description: successful operation
     post:
       tags:
         - account 
@@ -184,11 +218,15 @@ paths:
       operationId: update_user_for_account_by_id
       description: >-
          Update a managed db user by id for associated account.
+      responses:
+        '200':
+          description: successful operation
   '/accounts/{account}/sites':
     parameters:
       - in: path
         description: "Account ID. Must be valid mongo objectID"
         name: account
+        required: true
         schema:
           type: string
     get:
@@ -199,6 +237,9 @@ paths:
       operationId: get_sites_for_account
       description: >-
          Get list of managed sites for associated account.
+      responses:
+        '200':
+          description: successful operation
     post:
       tags:
         - account 
@@ -207,6 +248,9 @@ paths:
       description: >-
          Create a new managed site for associated account.
       operationId: create_sites_for_account
+      responses:
+        '200':
+          description: successful operation
   '/accounts/{account}/sites/{site}':
     parameters:
       - in: path
@@ -214,11 +258,13 @@ paths:
         name: account
         schema:
           type: string
+        required: true
       - in: path
         description: "Site Name."
         name: site 
         schema:
           type: string
+        required: true
     get:
       tags:
         - account 
@@ -227,6 +273,9 @@ paths:
       operationId: get_site_for_account_by_site_id
       description: >-
          Get managed site by id for associated account.
+      responses:
+        '200':
+          description: successful operation
     delete:
       tags:
         - account 
@@ -235,6 +284,9 @@ paths:
       description: >-
          Delete managed site by id for associated account.
       operationId: delete_site_for_account_by_site_id
+      responses:
+        '200':
+          description: successful operation
     post:
       tags:
         - account 
@@ -252,10 +304,22 @@ paths:
                 type: object
                 $ref: '#/components/schemas/Site'
 
-      parameters: []
-
 components:
   schemas:
+    Database:
+      type: object
+      description: Managed Mongo Database.
+      properties:
+        name:
+          type: integer
+          format: int64
+          description: Name of Database.
+        sizeOnDisk:
+          type: string
+          description: Size of database.
+        empty:
+          type: boolean
+          description: Whether or not database is empty.
     DatabaseList:
       type: object
       description: List of managed databases.
@@ -265,10 +329,9 @@ components:
           description: Array of databases.
           items:
             $ref: '#/components/schemas/Database'
-        total_size:
+        totalSize:
           description: Total size of databases.
           type: integer
-          name: totalSize
           format: int64
         ok:
           type: integer
@@ -282,21 +345,6 @@ components:
           type: integer
           format: int64
           description: Site ID. AKA WEB_NAME.
-    Database:
-      type: object
-      description: Managed Mongo Database.
-      properties:
-        name:
-          type: integer
-          format: int64
-          description: Name of Database.
-        size_on_disk:
-          type: string
-          name: sizeOnDisk
-          description: Size of database.
-        empty:
-          type: boolean
-          description: Whether or not database is empty.
 
 
   links: {}
