@@ -373,7 +373,7 @@ components:
           type: string
           description: Name of Database.
         sizeOnDisk:
-          type: int
+          type: integer
           format: int64
           description: Size of database.
         empty:
