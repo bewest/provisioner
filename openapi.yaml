@@ -1,4 +1,4 @@
-openapi: 3.0.1
+openapi: 3.0.2
 servers:
   - url: 'http://p0.internal.diabetes.watch'
 info:
@@ -88,6 +88,13 @@ paths:
       operationId: create_new_db_with_account
       description: >-
         Returns description of all db accounts.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountCreationInput'
+        description: Environment to run defined process.
+        required: true
       responses:
         '200':
           description: successful operation
@@ -171,6 +178,13 @@ paths:
       operationId: create_user_for_account
       description: >-
          Create a new managed db user for associated account.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreationInput'
+        description: Input to create credemtials for a DB.
+        required: true
       responses:
         '200':
           description: successful operation
@@ -218,6 +232,13 @@ paths:
       operationId: update_user_for_account_by_id
       description: >-
          Update a managed db user by id for associated account.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreationInput'
+        description: Input to create credemtials for a DB.
+        required: true
       responses:
         '200':
           description: successful operation
@@ -248,6 +269,13 @@ paths:
       description: >-
          Create a new managed site for associated account.
       operationId: create_sites_for_account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteCreationInput'
+        description: Input to create credemtials for a DB.
+        required: true
       responses:
         '200':
           description: successful operation
@@ -295,6 +323,13 @@ paths:
       operationId: update_site_for_account_by_site_id
       description: >-
          Update a managed site by id for associated account.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteCreationInput'
+        description: Input to create credemtials for a DB.
+        required: true
       responses:
         '200':
           description: successful operation
@@ -306,16 +341,40 @@ paths:
 
 components:
   schemas:
+    AccountCreationInput:
+      type: object
+      description: Managed Mongo Database.
+      properties:
+        name:
+          description: Internally unique Name/ID of this record. 8 hex characters.
+          type: string
+        account:
+          description: Account ID used to dereference account details.
+          type: string
+    UserCreationInput:
+      type: object
+      description: Input to create DB user credentials.
+      properties:
+        name:
+          description: Defined name.
+          type: string
+        internal_name:
+          description: Internally unique Name record.
+          type: string
+        salter:
+          type: string
+          description: Used as filler content.
+
     Database:
       type: object
       description: Managed Mongo Database.
       properties:
         name:
-          type: integer
-          format: int64
+          type: string
           description: Name of Database.
         sizeOnDisk:
-          type: string
+          type: int
+          format: int64
           description: Size of database.
         empty:
           type: boolean
@@ -337,6 +396,25 @@ components:
           type: integer
           format: int64
           description: Mongo status response.
+    SiteCreationInput:
+      type: object
+      description: Managed site consuming a database.
+      properties:
+        internal_name:
+          description: Internally unique Name record.
+          type: string
+        salter:
+          type: string
+          description: Some random input associated with record.
+        name:
+          description: Defined name.
+          type: string
+        api_secret:
+          description: API Secret for this site.
+          type: string
+        uploader_prefix:
+          description: Prefix to use for uploaders.
+          type: string
     Site:
       type: object
       description: Managed site consuming a database.
