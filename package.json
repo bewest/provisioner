@@ -12,7 +12,7 @@
     "bootevent": "0.0.1",
     "bunyan": "^1.4.0",
     "mongodb": "^3.1.10",
-    "mongoose": "^4.13.17",
+    "mongoose": "^4.13.20",
     "mongoose-encrypt": "0.0.1-alpha.3",
     "request": "^2.60.0",
     "restify": "^4.3.4"
