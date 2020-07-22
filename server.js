@@ -72,14 +72,17 @@ function createServer (opts) {
   server.get('/accounts/:account/sites/:site', account.by_account, sites.find_by_name, sites.query_multienv, sites.format);
 
   server.del('/accounts/:account/sites/:site', account.by_account, sites.find_by_name, admin.adminUser, sites.remove_by_site, sites.format);
-  server.post('/accounts/:account/sites', account.by_account, admin.adminUser
+  server.post('/accounts/:account/sites/:name', account.by_account
         , user.suggest
         , user.lookup_prexists
+        , admin.adminUser
+        , user.remove_by_user
         , user.create
         , sites.suggest
         , sites.create
         , sites.format);
-  server.post('/accounts/:account/sites/:name', account.by_account, admin.adminUser
+
+  server.post('/accounts/:account/sites', account.by_account, admin.adminUser
         , user.suggest
         , user.lookup_prexists
         , user.create
