@@ -12,10 +12,10 @@
     "bootevent": "0.0.1",
     "bunyan": "^1.4.0",
     "mongodb": "^3.1.10",
-    "mongoose": "^5.9.9",
+    "mongoose": "^6.2.1",
     "mongoose-encrypt": "0.0.1-alpha.3",
     "request": "^2.60.0",
-    "restify": "^4.3.4"
+    "restify": "^8.6.1"
   },
   "description": "Used to allocate resources for accounts.",
   "devDependencies": {},

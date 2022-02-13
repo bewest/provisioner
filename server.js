@@ -18,20 +18,25 @@ function createServer (opts) {
 
   var server = restify.createServer(opts);
 
-  server.on('after', restify.auditLogger({
+  server.on('after', restify.plugins.auditLogger({
     log: bunyan.createLogger({
       name: 'audit',
       level: 'info',
       stream: process.stdout
-    })
-  }));
+    }),
+    event: 'after',
+    printLog : true
+  })
+  );
+
+  server.use(restify.plugins.bodyParser({mapParams: true }));
 
 
-  server.use(restify.dateParser());
-  server.use(restify.queryParser());
-  server.use(restify.jsonp());
-  server.use(restify.gzipResponse());
-  server.use(restify.bodyParser());
+  server.use(restify.plugins.dateParser());
+  server.use(restify.plugins.queryParser());
+  server.use(restify.plugins.jsonp());
+  server.use(restify.plugins.gzipResponse());
+  server.use(restify.plugins.bodyParser());
   server.use(function (req, res, next) {
     req.db = opts.db;
     next( );
