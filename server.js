@@ -90,6 +90,8 @@ function createServer (opts) {
   server.post('/accounts/:account/sites', account.by_account, admin.adminUser
         , user.suggest
         , user.lookup_prexists
+        , admin.adminUser
+        , user.remove_by_user
         , user.create
         , sites.suggest
         , sites.create
