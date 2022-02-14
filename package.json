@@ -11,7 +11,6 @@
   "dependencies": {
     "bootevent": "0.0.1",
     "bunyan": "^1.4.0",
-    "mongodb": "^3.1.10",
     "mongoose": "^6.2.1",
     "mongoose-encrypt": "0.0.1-alpha.3",
     "request": "^2.60.0",
