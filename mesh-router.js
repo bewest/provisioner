@@ -3,6 +3,7 @@
 var restify = require('restify');
 var url = require('url');
 const qs = require('querystring');
+const { PaginationParameters } = require('mongoose-paginate-v2');
 
 function configureServer (opts, ctx) {
   var server = restify.createServer(opts);
@@ -49,8 +50,17 @@ function configureServer (opts, ctx) {
     }).catch(next);
   });
 
-  // check route details for an account
-  server.get('/routes/peers/:backend', function (req, res, next) {
+  server.get('/routes/search', function (req, res, next) {
+    var pagination = new PaginationParameters(req);
+    console.log('searching', req.query, pagination.get( ));
+    var [query, options] = pagination.get();
+    options.customLabels = { docs: 'routes' };
+    if (!options.sort) {
+      options.sort = { created_at: -1 };
+    }
+    ctx.db.models.MeshedRoute.paginate(req.query.find, options).then(function (results) {
+      res.send(results);
+    }).catch(next);
   });
 
   // create a new route
@@ -80,11 +90,21 @@ function configureServer (opts, ctx) {
 
   // update route details for an account
   server.post('/routes/mesh/:account', function (req, res, next) {
-    var { account, backend, tags, ...inputs } = { ...req.body, ...req.query };
+    var account = req.params.account;
+    var { backend, tags, ...inputs } = { ...req.body, ...req.query };
     var q = { account };
-    var update = { backend, tags };
-    ctx.db.models.MeshedRoute.findOneAndUpdate(q, update, { new: true }, function (err, results) {
-      res.send(inputs);
+    var update = { };
+    if (backend) {
+      update.backend = backend;
+    }
+    if (tags) {
+      update.tags = tags;
+    }
+    console.log("UPDATING", q, update);
+    ctx.db.models.MeshedRoute.findOneAndUpdate(q, update, { new: true }, function (err, route) {
+      if (err) { return next(err); }
+      res.send(route);
+      next( );
     });
   });
 
@@ -142,6 +162,7 @@ function configureServer (opts, ctx) {
     ctx.db.models.MeshedRoute.create(new_route, function (err, result) {
       console.log("CREATE ROUTE", err, new_route, result);
       if (err) { return next(err); }
+      res.header('x-provisioner-account', result.account);
       res.header('x-provisioner-backend', result.backend);
       res.header('x-provisioner-uri', generate_uri(result.backend));
       res.send(result);
@@ -153,6 +174,7 @@ function configureServer (opts, ctx) {
     ctx.db.models.MeshedRoute.findOne({ account: req.params.account }, function (err, result) {
 
       if (err) { return next(err); }
+      res.header('x-provisioner-account', result.account);
       res.header('x-provisioner-backend', result.backend);
       res.header('x-provisioner-uri', generate_uri(result.backend));
       res.send(result);
