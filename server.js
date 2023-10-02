@@ -57,6 +57,25 @@ function createServer (opts) {
       next( );
     });
   });
+  server.get('/about/stats', function (req, res, next) {
+    res.tally = { };
+    req.db.models.Account.count({ }, function (err, results) {
+      console.log("count stats", err, results);
+      if (err) { return next(err); }
+      res.tally.account = results;
+      next();
+    });
+  }, function (req, res, next) {
+    req.db.models.User.count({ }, function (err, results) {
+      console.log("count stats", err, results);
+      if (err) { return next(err); }
+      res.tally.user = results;
+      next();
+    });
+  }, function (req, res, next) {
+      res.send(res.tally);
+  });
+
   server.post('/accounts', account.suggest, account.create, account.format);
   server.get('/accounts', account.list, account.format);
 
