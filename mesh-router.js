@@ -93,13 +93,7 @@ function configureServer (opts, ctx) {
     var account = req.params.account;
     var { backend, tags, ...inputs } = { ...req.body, ...req.query };
     var q = { account };
-    var update = { };
-    if (backend) {
-      update.backend = backend;
-    }
-    if (tags) {
-      update.tags = tags;
-    }
+    var update = { tags : tags ? tags : null };
     console.log("UPDATING", q, update);
     ctx.db.models.MeshedRoute.findOneAndUpdate(q, update, { new: true }, function (err, route) {
       if (err) { return next(err); }
