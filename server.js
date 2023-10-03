@@ -76,10 +76,13 @@ function createServer (opts) {
       res.send(res.tally);
   });
 
+  server.get('/about/search', user.search);
+
   server.post('/accounts', account.suggest, account.create, account.format);
   server.get('/accounts', account.list, account.format);
 
   server.get('/accounts/:account', account.by_account, account.format);
+  server.post('/accounts/:account/tags', account.by_account, user.annotate);
   server.del('/accounts/:account', admin.adminUser, account.by_account, account.remove_by_account, account.format);
 
   server.get('/accounts/:account/dbs', account.by_account, function (req, res, next) { });
