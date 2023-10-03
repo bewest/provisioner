@@ -94,7 +94,13 @@ function createServer (opts) {
 
   // server.post('/accounts/:account/users/:user/password', account.by_account, user.by_id, user.format);
   server.post('/accounts/:account/users', account.by_account, admin.adminUser, user.suggest, user.create, user.format);
-  server.post('/accounts/:account/users/:name', account.by_account, admin.adminUser, user.suggest, user.create, user.format);
+  server.post('/accounts/:account/users/:name', account.by_account
+    , admin.adminUser
+    , user.suggest
+    , user.lookup_prexists
+    , user.remove_by_user
+    , user.create
+    , user.format);
 
   // server.get('/accounts/:account/sites', account.by_account, user.list, sites.format);
   server.get('/accounts/:account/sites/:site', account.by_account, sites.find_by_name, sites.query_multienv, sites.format);
