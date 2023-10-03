@@ -79,6 +79,7 @@ function createServer (opts) {
   server.get('/about/search', user.search);
 
   server.post('/accounts', account.suggest, account.create, account.format);
+  server.post('/accounts/:account', account.suggest, account.create, account.format);
   server.get('/accounts', account.list, account.format);
 
   server.get('/accounts/:account', account.by_account, account.format);
