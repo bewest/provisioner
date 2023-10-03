@@ -102,6 +102,20 @@ function configureServer (opts, ctx) {
     });
   });
 
+  // update route details for an account
+  server.post('/routes/mesh/:account/reassign/:backend', function (req, res, next) {
+    var account = req.params.account;
+    var { backend, tags, ...inputs } = { ...req.params, ...req.body, ...req.query };
+    var q = { account };
+    var update = { tags : tags ? tags : null, backend };
+    console.log("UPDATING REASSIGNMENT", q, update);
+    ctx.db.models.MeshedRoute.findOneAndUpdate(q, update, { new: true }, function (err, route) {
+      if (err) { return next(err); }
+      res.send(route);
+      next( );
+    });
+  });
+
   // delete a route
   server.del('/routes/mesh/:account', function (req, res, next) {
     ctx.db.models.MeshedRoute.remove({ account: req.params.account }, function (err, results) {
