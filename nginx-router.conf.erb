@@ -94,7 +94,7 @@ http {
     location    /accounts/ {
       auth_request /valid/storage/conductor;
       auth_request_set $target_proxy $upstream_http_x_provisioner_uri;
-      proxy_pass $target_proxy$request_uri;
+      proxy_pass $target_proxy;
       # proxy_pass $upstream_http_x_provisioner_uri$request_uri;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;
