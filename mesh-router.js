@@ -129,6 +129,7 @@ function configureServer (opts, ctx) {
 
   server.get('/storage/assignment/status', function (req, res, next) {
     var spec = ctx.env.meshable_spec.split(',');
+
     ctx.db.models.MeshedRoute.aggregate( [
       { $match: { backend: { $in: spec } } },
       { $group: { _id: '$backend', count: { $sum: 1 } } },
@@ -136,8 +137,11 @@ function configureServer (opts, ctx) {
       { $sort: { count: 1 } }
 
     ])
-    .exec( ).then(function (result) {
-      res.send({ peers: result });
+    .exec( ).then(function (candidates) {
+      if (candidates.length < 1) {
+        candidates.push({ count: 0, peer: spec[0] });
+      }
+      res.send({ candidates });
     }).catch(next);
   });
 
@@ -160,6 +164,9 @@ function configureServer (opts, ctx) {
 
     ])
     .exec( ).then(function (candidates) {
+      if (candidates.length < 1) {
+        candidates.push({ count: 0, peer: spec[0] });
+      }
       res.locals = { candidates };
       next( );
     }).catch(next);
