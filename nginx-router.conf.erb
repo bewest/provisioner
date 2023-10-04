@@ -71,6 +71,7 @@ http {
       proxy_pass http://backends/storage/assignment/creation;
       proxy_pass_request_body off;
       proxy_set_header content-length "";
+      proxy_method POST;
     }
 
     location /valid/storage/conductor {
@@ -86,16 +87,17 @@ http {
     location = /accounts {
       auth_request /valid/storage/assignment/creation;
       auth_request_set $account_id $upstream_http_x_provisioner_account;
-      proxy_pass $upstream_http_x_provisioner_uri/accounts/$account_id;
+      auth_request_set $target_proxy $upstream_http_x_provisioner_uri;
+      proxy_pass $target_proxy/accounts/$account_id;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;
       proxy_set_header X-Forwarded-Port $server_port;
     }
-    location    /accounts/ {
+    location ^~  /accounts/ {
       auth_request /valid/storage/conductor;
       auth_request_set $target_proxy $upstream_http_x_provisioner_uri;
       proxy_pass $target_proxy;
-      # proxy_pass $upstream_http_x_provisioner_uri$request_uri;
+
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;
       proxy_set_header X-Forwarded-Port $server_port;

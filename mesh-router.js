@@ -218,7 +218,6 @@ if (!module.parent) {
   , meshable_spec: process.env.MESHED_PROVISIONERS || 'provisioner,provisioner-mesh-b'
   , uri_template: process.env.URI_TEMPLATE || 'http://origin'
   , replace_keyword: process.env.URI_REPLACE_KEYWORD || 'origin'
-
   };
   var boot = require('bootevent')( );
   // var env = require('./lib/env');
