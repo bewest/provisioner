@@ -178,6 +178,21 @@ function configureServer (opts, ctx) {
     });
   });
 
+  server.get('/storage/conductor', function (req, res, next) {
+    var account = req.header('x-provisioner-account');
+    console.log('incoming headers', req.headers);
+    ctx.db.models.MeshedRoute.findOne({ account }, function (err, result) {
+
+      console.log("FOUND", err, result);
+      if (err) { return next(err); }
+      res.header('x-provisioner-account', result.account);
+      res.header('x-provisioner-backend', result.backend);
+      res.header('x-provisioner-uri', generate_uri(result.backend));
+      res.send(result);
+      next( );
+    });
+  });
+
   server.get('/storage/conductor/:account', function (req, res, next) {
     ctx.db.models.MeshedRoute.findOne({ account: req.params.account }, function (err, result) {
 

@@ -41,4 +41,5 @@ RUN /app/setup_docker_guest.sh
 # RUN ln -sf /dev/stdout /var/log/nginx/access.log
 # RUN ln -sf /dev/stderr /var/log/nginx/error.log
 
-CMD /app/start_container.sh
+ENTRYPOINT ["/app/start_container.sh"]
+CMD ["provisioner"]
