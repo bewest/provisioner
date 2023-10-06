@@ -195,9 +195,19 @@ function configureServer (opts, ctx) {
       res.header('x-provisioner-account', result.account);
       res.header('x-provisioner-backend', result.backend);
       res.header('x-provisioner-uri', generate_uri(result.backend));
-      res.send(result);
+      res.result = result;
       next( );
     });
+  }, function (req, res, next) {
+    if (req.header('x-request-method') == 'DELETE') {
+      return ctx.db.models.MeshedRoute.deleteOne(res.result, function (err, result) {
+        next(err);
+      });
+    }
+    next( );
+  }, function (req, res, next) {
+    res.send(res.result);
+    next( );
   });
 
   server.get('/storage/conductor/:account', function (req, res, next) {
