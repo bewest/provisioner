@@ -185,9 +185,10 @@ function configureServer (opts, ctx) {
     });
   });
 
-  server.get('/storage/conductor', function (req, res, next) {
+  server.post('/storage/conductor', function (req, res, next) {
     var account = req.header('x-provisioner-account');
     console.log('incoming headers', req.headers);
+    console.log('incoming body', req.body);
     ctx.db.models.MeshedRoute.findOne({ account }, function (err, result) {
 
       console.log("FOUND", err, result);

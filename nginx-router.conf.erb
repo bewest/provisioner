@@ -80,9 +80,13 @@ http {
       proxy_set_header X-request-uri $request_uri;
       proxy_set_header X-request-method $request_method;
       proxy_pass http://backends/storage/conductor;
-      proxy_pass_request_body off;
-      proxy_method GET;
-      proxy_set_header content-length "";
+      # proxy_pass_request_body off;
+      # proxy_method GET;
+      # proxy_method GET;
+      # proxy_set_header content-length "";
+      proxy_set_header content-type "application/json";
+      proxy_method POST;
+      proxy_set_body '{ "account": "$account_id", "method": "$request_method", "uri": "$request_uri" }';
     }
 
     location = /accounts {
