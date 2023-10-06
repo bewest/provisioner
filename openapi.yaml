@@ -70,6 +70,28 @@ paths:
           name: name
           schema:
             type: string
+  '/about/stats':
+    get:
+      summary: Get tally of managed storage resources, accounts (dbs) and users (credentials).
+      operationId: get_server_storage_tally
+      description: >-
+        Returns tally of all managed storage accounts and users.  This
+        generally maps to the number of databases managed and user credentials
+        provisioned for those databases.
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/ServerManagedTally'
+  '/about/search':
+    get:
+      summary: Search for users using tags
+      operationId: get_searchable_props
+      description: >-
+        Searches user table by aggregate by tags and other properties.
   '/accounts':
     get:
       tags:
@@ -341,6 +363,16 @@ paths:
 
 components:
   schemas:
+    ServerManagedTally:
+      type: object
+      description: A tally of resources managed by the server.
+      properties:
+        account:
+          description: Tally of managed user database accounts.
+          type: integer
+        user:
+          description: Tally of managed db user credentials.
+          type: integer
     AccountCreationInput:
       type: object
       description: Managed Mongo Database.
