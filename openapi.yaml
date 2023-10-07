@@ -17,7 +17,7 @@ tags:
     description: Environment for a process.
   - name: cluster
     description: Manages processes by cluster.
-  - name: db 
+  - name: db
     description: Environment for a process.
   - name: env
     description: Environment for a process.
@@ -32,6 +32,7 @@ paths:
     get:
       tags:
         - db
+        - provisioner
       operationId: get_db_list
       summary: Get list of managed dbs.
       description: JSON description of all currently managed dbs.
@@ -48,6 +49,7 @@ paths:
     get:
       tags:
         - db
+        - provisioner
       operationId: get_named_db
       summary: Running database by name.
       description: Returns details of a database by `name`.
@@ -72,6 +74,10 @@ paths:
             type: string
   '/about/stats':
     get:
+      tags:
+        - about
+        - provisioner
+        - search
       summary: Get tally of managed storage resources, accounts (dbs) and users (credentials).
       operationId: get_server_storage_tally
       description: >-
@@ -88,14 +94,25 @@ paths:
                 $ref: '#/components/schemas/ServerManagedTally'
   '/about/search':
     get:
+      tags:
+        - about
+        - provisioner
+        - search
       summary: Search for users using tags
       operationId: get_searchable_props
       description: >-
         Searches user table by aggregate by tags and other properties.
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPagination'
   '/accounts':
     get:
       tags:
-        - account 
+        - account
       summary: Get list of accounts.
       operationId: get_accounts_list
       description: >-
@@ -103,9 +120,17 @@ paths:
       responses:
         '200':
           description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  $ref: '#/components/schemas/Account'
     post:
       tags:
-        - account 
+        - account
+        - provisioner
       summary: Create new managed database account.
       operationId: create_new_db_with_account
       description: >-
@@ -120,10 +145,14 @@ paths:
       responses:
         '200':
           description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
   '/accounts/{account}':
     get:
       tags:
-        - account 
+        - account
       summary: Get accounts by account identifier.
       operationId: get_named_account
       description: >-
@@ -138,9 +167,13 @@ paths:
       responses:
         '200':
           description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
     delete:
       tags:
-        - account 
+        - account
       summary: Delete accounts by account identifier.
       description: >-
          Delete one db account.
@@ -153,7 +186,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        '204':
           description: successful operation
   '/accounts/{account}/dbs':
     parameters:
@@ -165,7 +198,7 @@ paths:
           type: string
     get:
       tags:
-        - account 
+        - account
       summary: Get all dbs for accounts by account identifier.
       operationId: get_dbs_for_account
       description: >-
@@ -183,7 +216,7 @@ paths:
           type: string
     get:
       tags:
-        - account 
+        - account
         - user
       summary: Get list of managed db users for associated account.
       operationId: get_users_for_account
@@ -192,9 +225,21 @@ paths:
       responses:
         '200':
           description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: integer
+                    default: 1
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
     post:
       tags:
-        - account 
+        - account
         - user
       summary: Create a new managed db users for associated account.
       operationId: create_user_for_account
@@ -220,13 +265,13 @@ paths:
         required: true
       - in: path
         description: "User ID. Must be valid mongo objectID"
-        name: user 
+        name: user
         schema:
           type: string
         required: true
     get:
       tags:
-        - account 
+        - account
         - user
       summary: Get managed db user by id for associated account.
       operationId: get_user_for_account_by_id
@@ -235,9 +280,15 @@ paths:
       responses:
         '200':
           description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/User'
+
     delete:
       tags:
-        - account 
+        - account
         - user
       summary: Delete managed db user by id for associated account.
       description: >-
@@ -248,7 +299,7 @@ paths:
           description: successful operation
     post:
       tags:
-        - account 
+        - account
         - user
       summary: Update a managed db user by id for associated account.
       operationId: update_user_for_account_by_id
@@ -264,6 +315,13 @@ paths:
       responses:
         '200':
           description: successful operation
+        '201':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/User'
   '/accounts/{account}/sites':
     parameters:
       - in: path
@@ -274,7 +332,7 @@ paths:
           type: string
     get:
       tags:
-        - account 
+        - account
         - site
       summary: Get list of managed sites for associated account.
       operationId: get_sites_for_account
@@ -285,7 +343,7 @@ paths:
           description: successful operation
     post:
       tags:
-        - account 
+        - account
         - site
       summary: Create a new managed site for associated account.
       description: >-
@@ -311,13 +369,13 @@ paths:
         required: true
       - in: path
         description: "Site Name."
-        name: site 
+        name: site
         schema:
           type: string
         required: true
     get:
       tags:
-        - account 
+        - account
         - site
       summary: Get managed site by id for associated account.
       operationId: get_site_for_account_by_site_id
@@ -328,7 +386,7 @@ paths:
           description: successful operation
     delete:
       tags:
-        - account 
+        - account
         - site
       summary: Delete managed site by id for associated account.
       description: >-
@@ -339,7 +397,7 @@ paths:
           description: successful operation
     post:
       tags:
-        - account 
+        - account
         - site
       summary: Update a managed site by id for associated account.
       operationId: update_site_for_account_by_site_id
@@ -360,9 +418,215 @@ paths:
               schema:
                 type: object
                 $ref: '#/components/schemas/Site'
+  '/routes':
+    get:
+      tags:
+        - routes
+      responses:
+        '200':
+          description: An overview of routes.
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/MeshRouteTally'
+  '/routes/search':
+    get:
+      tags:
+        - routes
+      responses:
+        '200':
+          description: Paginated search results for routes.
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/MeshedRoutePagination'
+  '/routes/mesh':
+    post:
+      tags:
+        - routes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                account:
+                  type: string
+                backend:
+                  type: string
+                tags:
+                  type: string
+                  nullable: true
+        description: Create a meshed route.
+        required: true
+      responses:
+        '200':
+          description: A created route.
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/MeshedRoute'
+  '/routes/mesh/{account}':
+    parameters:
+      - in: path
+        description: "Account ID. Must be valid mongo objectID"
+        name: account
+        schema:
+          type: string
+        required: true
+    get:
+      tags:
+        - routes
+      description: "Meshed route details."
+      responses:
+        '200':
+          description: 'Route details.'
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/MeshedRoute'
+    post:
+      tags:
+        - routes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tags:
+                  type: string
+                  nullable: true
+        description: Create a meshed route.
+        required: true
+      responses:
+        '201':
+          description: 'Updated route with new tags if any.'
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/MeshedRoute'
+    delete:
+      tags:
+        - routes
+      responses:
+        '204':
+          description: 'Removed route'
+  '/routes/mesh/{account}/reassign/{backend}':
+    parameters:
+      - in: path
+        description: "Account ID. Must be valid mongo objectID"
+        name: account
+        schema:
+          type: string
+        required: true
+      - in: path
+        description: "Backend hostname:port address."
+        name: backend
+        schema:
+          type: string
+        required: true
+    post:
+      tags:
+        - routes
+      responses:
+        '201':
+          description: 'Reassigned route with updated backend'
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/MeshedRoute'
+  '/storage/assignment/status':
+    get:
+      tags:
+        - routes
+      responses:
+        '200':
+          description: 'Summary of routes'
+  '/storage/assignment/creation':
+    post:
+      tags:
+        - router
+      responses:
+        '201':
+          description: 'Create new route for pass through with load balancer.'
+  '/storage/conductor':
+    post:
+      tags:
+        - router
+      responses:
+        '201':
+          description: 'Create new route for pass through with load balancer.'
 
 components:
   schemas:
+    MeshRouteTally:
+      type: object
+      description: A tally of meshed routes.
+      properties:
+        peers:
+          type: array
+          items:
+            type: object
+            properties:
+              count:
+                type: integer
+              peer:
+                type: string
+                format: hostname
+    MeshedRoute:
+      type: object
+      description: A route providing administrative connectivity over a mesh of managed database accounts over a pool of database clusters.
+      properties:
+        account:
+          type: string
+          format: ObjectId
+        backend:
+          type: string
+          format: hostname
+        tags:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    MeshedRoutePagination:
+      type: object
+      description: Paginated search results for routes.
+      properties:
+        totalDocs:
+          type: integer
+        offset:
+          type: integer
+        limit:
+          type: integer
+        totalPages:
+          type: integer
+        page:
+          type: integer
+        pagingCounter:
+          type: integer
+        hasPrevPage:
+          type: boolean
+        hasNextPage:
+          type: boolean
+        prevPage:
+          type: integer
+          nullable: true
+        nextPage:
+          type: integer
+          nullable: true
+        routes:
+          type: array
+          items:
+            type: object
+            $ref: '#/components/schemas/MeshedRoute'
+       
     ServerManagedTally:
       type: object
       description: A tally of resources managed by the server.
@@ -401,16 +665,13 @@ components:
       type: object
       description: Managed Mongo Database.
       properties:
+        host:
+          type: string
+          description: Name of Database.
         name:
           type: string
           description: Name of Database.
-        sizeOnDisk:
-          type: integer
-          format: int64
-          description: Size of database.
-        empty:
-          type: boolean
-          description: Whether or not database is empty.
+
     DatabaseList:
       type: object
       description: List of managed databases.
@@ -447,6 +708,84 @@ components:
         uploader_prefix:
           description: Prefix to use for uploaders.
           type: string
+    UserPagination:
+      type: object
+      properties:
+        totalDocs:
+          type: integer
+        offset:
+          type: integer
+        limit:
+          type: integer
+        totalPages:
+          type: integer
+        page:
+          type: integer
+        pagingCounter:
+          type: integer
+        hasPrevPage:
+          type: boolean
+        hasNextPage:
+          type: boolean
+        prevPage:
+          type: integer
+          nullable: true
+        nextPage:
+          type: integer
+          nullable: true
+        users:
+          type: array
+          items:
+            type: object
+            $ref: '#/components/schemas/User'
+
+    User:
+      type: object
+      description: Managed database user credential representing access to a managed tenant database.
+      properties:
+        _id:
+          type: string
+          format: ObjectId
+        account:
+          type: object
+          properties:
+            salter:
+              type: string
+            id:
+              type: object
+              $ref: '#/components/schemas/Account'
+        created_at:
+          type: string
+          format: date-time
+        sitename:
+          type: string
+        tags:
+          type: string
+        creds:
+          type: object
+          properties:
+            user:
+              type: string
+              description: Encrypted.
+              format: password
+            pass:
+              type: string
+              description: Encrypted.
+              format: password
+     
+    Account:
+      type: object
+      description: Managed account representing a managed tenant database.
+      properties:
+        _id:
+          type: string
+          description: ObjectId
+        account:
+          type: string
+          description: ObjectId
+        db:
+          type: object
+          $ref: '#/components/schemas/Database'
     Site:
       type: object
       description: Managed site consuming a database.
