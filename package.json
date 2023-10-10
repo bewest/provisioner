@@ -13,6 +13,7 @@
     "bunyan": "^1.4.0",
     "mongoose": "^6.2.1",
     "mongoose-encrypt": "0.0.1-alpha.3",
+    "mongoose-paginate-v2": "^1.7.4",
     "request": "^2.60.0",
     "restify": "^8.6.1"
   },
