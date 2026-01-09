@@ -192,49 +192,53 @@ node mesh-router.js
 
 ### Test Suite Structure
 
-The `test/` directory contains skeleton test files with implementation guidance:
-
 ```
 test/
 ├── README.md           # Setup instructions and implementation notes
-├── helper.js           # Shared utilities (MongoDB setup, mocks)
-├── accounts.test.js    # Account and User API tests
-├── sites.test.js       # Site creation with compute forwarding tests
-└── mesh-router.test.js # Mesh routing and load balancing tests
+├── helper.js           # Shared utilities (MongoDB setup, mocks, server bootstrap)
+├── accounts.test.js    # Account and User API tests (IMPLEMENTED - 16 tests)
+├── sites.test.js       # Site creation with compute forwarding tests (skeleton)
+└── mesh-router.test.js # Mesh routing and load balancing tests (skeleton)
 ```
 
 ### Running Tests
 
-First install test dependencies:
-```bash
-npm install --save-dev mocha chai supertest nock
-```
-
-Then run tests:
 ```bash
 npm test                # Run all tests
-npm run test:accounts   # Account/User tests only
+npm run test:accounts   # Account/User tests only (16 passing tests)
 npm run test:sites      # Sites tests only
 npm run test:mesh       # Mesh router tests only
 ```
 
+### Test Helper Utilities
+
+The `test/helper.js` module provides:
+- `startTestMongo()` / `stopTestMongo()` - In-memory MongoDB via mongodb-memory-server
+- `createTestServer(mongoUri)` / `closeTestServer()` - Server bootstrap for tests
+- `mockComputeAPI(baseUrl)` - Nock-based mocking for MULTI_ENV_API
+- `createTestAccount(request, server)` - Helper to create test accounts
+- `cleanupTestData(ctx)` - Cleans collections between tests
+
 ### Test Implementation Status
 
-The test files are **skeletons with TODOs** - they provide:
-- Test structure and organization
-- Detailed implementation hints
-- Code examples for reference
-- Known issues to address
+| File | Status | Coverage |
+|------|--------|----------|
+| accounts.test.js | **Implemented** | Account CRUD, User CRUD, Stats API (16 tests) |
+| sites.test.js | Skeleton | Needs compute API mocking |
+| mesh-router.test.js | Skeleton | Needs separate server setup |
 
-See `test/README.md` for full implementation guide.
+### Known API Quirks
 
-### Key Testing Challenges
-
-1. **Compute API Mocking**: Sites endpoints call `MULTI_ENV_API` - use `nock` to mock
-2. **Encryption Keys**: Set `KEY_PREFIX_0` for credential encryption tests
+1. **Single user per account limitation**: The API uses a fixed "salter" value when creating users, causing subsequent user creations to replace the previous user. This is documented in the test suite.
+2. **Compute API Mocking**: Sites endpoints call `MULTI_ENV_API` - use `nock` to mock
 3. **Separate Servers**: `server.js` and `mesh-router.js` need separate test setups
 
 ## Recent Changes
+- 2026-01-09: Test suite implemented for Account and User APIs
+  - Fully implemented test/accounts.test.js with 16 passing tests
+  - Implemented test/helper.js with working utilities (MongoDB, server bootstrap, mocks)
+  - Installed test dependencies: mocha, chai, supertest, nock
+  - Documented API quirk: single user per account due to fixed salter value
 - 2026-01-09: Test suite skeleton added
   - Created test/ directory with skeleton test files for accounts, sites, and mesh-router
   - Added test helper with setup utilities and implementation guidance
