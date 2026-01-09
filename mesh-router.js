@@ -230,7 +230,7 @@ function configureServer (opts, ctx) {
 
 
 if (!module.parent) {
-  var port = parseInt(process.env.PORT || '4343')
+  var port = parseInt(process.env.PORT || '5000')
   var config = {
     mongo_url: process.env.MONGODB_MESHDB
   , meshable_spec: process.env.MESHED_PROVISIONERS || 'provisioner,provisioner-mesh-b'
