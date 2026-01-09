@@ -12,6 +12,7 @@ const nock = require('nock');
 
 let mongoServer = null;
 let serverInstance = null;
+let meshServerInstance = null;
 
 /**
  * Start in-memory MongoDB for testing
@@ -83,6 +84,72 @@ async function closeTestServer() {
 }
 
 /**
+ * Create a mesh router test server instance
+ * 
+ * @param {string} mongoUri - MongoDB connection URI
+ * @param {Object} config - Configuration overrides
+ * @returns {Promise<{server: Object, ctx: Object}>}
+ */
+function createMeshServer(mongoUri, config = {}) {
+  return new Promise((resolve, reject) => {
+    const meshConfig = {
+      mongo_url: mongoUri,
+      meshable_spec: config.meshable_spec || 'provisioner-a,provisioner-b',
+      uri_template: config.uri_template || 'http://{origin}.internal:5000',
+      replace_keyword: config.replace_keyword || '{origin}'
+    };
+    
+    const boot = require('bootevent')();
+    const meshable = require('../lib/meshable');
+    const createMeshRouter = require('../mesh-router');
+    
+    const proc = boot.acquire(function(ctx, next) {
+      ctx.env = meshConfig;
+      next();
+    });
+    
+    meshable(proc).acquire(function(ctx, next) {
+      try {
+        const server = createMeshRouter(meshConfig, ctx);
+        meshServerInstance = server;
+        ctx.server = server;
+        next();
+      } catch (err) {
+        reject(err);
+      }
+    }).boot(function(ctx) {
+      resolve({ server: ctx.server, ctx });
+    });
+  });
+}
+
+/**
+ * Close the mesh router test server
+ */
+async function closeMeshServer(ctx) {
+  if (meshServerInstance) {
+    await new Promise((resolve) => {
+      meshServerInstance.close(resolve);
+    });
+    meshServerInstance = null;
+  }
+  if (ctx && ctx.db) {
+    await ctx.db.close();
+  }
+}
+
+/**
+ * Clean up mesh route data between tests
+ * 
+ * @param {Object} ctx - server context with db.models
+ */
+async function cleanupMeshData(ctx) {
+  if (ctx && ctx.db && ctx.db.models && ctx.db.models.MeshedRoute) {
+    await ctx.db.models.MeshedRoute.deleteMany({});
+  }
+}
+
+/**
  * Setup compute API mocks using nock
  * 
  * Required mocks for /sites endpoint testing:
@@ -149,6 +216,9 @@ module.exports = {
   stopTestMongo,
   createTestServer,
   closeTestServer,
+  createMeshServer,
+  closeMeshServer,
+  cleanupMeshData,
   mockComputeAPI,
   clearMocks,
   createTestAccount,

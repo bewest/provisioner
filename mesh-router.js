@@ -201,9 +201,10 @@ function configureServer (opts, ctx) {
     });
   }, function (req, res, next) {
     if (req.header('x-request-method') == 'DELETE') {
-      return ctx.db.models.MeshedRoute.deleteOne(res.result, function (err, result) {
-        next(err);
-      });
+      ctx.db.models.MeshedRoute.deleteOne({ _id: res.result._id }).then(function () {
+        next();
+      }).catch(next);
+      return;
     }
     next( );
   }, function (req, res, next) {
@@ -227,7 +228,7 @@ function configureServer (opts, ctx) {
   return server;
 }
 
-
+module.exports = configureServer;
 
 if (!module.parent) {
   var port = parseInt(process.env.PORT || '5000')
