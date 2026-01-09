@@ -197,7 +197,7 @@ test/
 ├── README.md           # Setup instructions and implementation notes
 ├── helper.js           # Shared utilities (MongoDB setup, mocks, server bootstrap)
 ├── accounts.test.js    # Account and User API tests (IMPLEMENTED - 16 tests)
-├── sites.test.js       # Site creation with compute forwarding tests (skeleton)
+├── sites.test.js       # Site creation with compute forwarding tests (IMPLEMENTED - 17 tests)
 └── mesh-router.test.js # Mesh routing and load balancing tests (skeleton)
 ```
 
@@ -206,7 +206,7 @@ test/
 ```bash
 npm test                # Run all tests
 npm run test:accounts   # Account/User tests only (16 passing tests)
-npm run test:sites      # Sites tests only
+npm run test:sites      # Sites tests only (17 passing tests)
 npm run test:mesh       # Mesh router tests only
 ```
 
@@ -224,7 +224,7 @@ The `test/helper.js` module provides:
 | File | Status | Coverage |
 |------|--------|----------|
 | accounts.test.js | **Implemented** | Account CRUD, User CRUD, Stats API (16 tests) |
-| sites.test.js | Skeleton | Needs compute API mocking |
+| sites.test.js | **Implemented** | Site CRUD, compute forwarding, configuration (17 tests) |
 | mesh-router.test.js | Skeleton | Needs separate server setup |
 
 ### Known API Quirks
@@ -234,6 +234,12 @@ The `test/helper.js` module provides:
 3. **Separate Servers**: `server.js` and `mesh-router.js` need separate test setups
 
 ## Recent Changes
+- 2026-01-09: Sites test suite implemented (17 tests)
+  - Fully implemented test/sites.test.js with compute API mocking via nock
+  - Tests cover site creation, GET with compute status, DELETE with cleanup
+  - Tests verify compute forwarding configuration (MongoDB connection string, collection prefixes, Nightscout defaults)
+  - Fixed application bug in remove_by_site: used req.site instead of req.user for removeUser callback
+  - Sitename behavior documented: uses internal_name if provided, otherwise URL param
 - 2026-01-09: Test suite implemented for Account and User APIs
   - Fully implemented test/accounts.test.js with 16 passing tests
   - Implemented test/helper.js with working utilities (MongoDB, server bootstrap, mocks)
