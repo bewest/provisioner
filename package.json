@@ -4,13 +4,15 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "node dev-server.js"
   },
   "author": "Ben West <bewest@gmail.com>",
   "license": "BSD3",
   "dependencies": {
     "bootevent": "0.0.1",
     "bunyan": "^1.4.0",
+    "mongodb-memory-server": "^11.0.1",
     "mongoose": "^6.2.1",
     "mongoose-encrypt": "0.0.1-alpha.3",
     "mongoose-paginate-v2": "^1.7.4",

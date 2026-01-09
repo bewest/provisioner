@@ -79,9 +79,17 @@ The recent architecture enables multiple clusters of MongoDB to act as a unified
 
 ## Running the Server
 
-### Provisioner Server
+### Development Mode (with In-Memory MongoDB)
+For local testing without an external MongoDB:
 ```bash
-node server.js
+npm run dev
+```
+This uses `mongodb-memory-server` to spin up an in-memory MongoDB instance. Data is not persisted between restarts.
+
+### Production Mode (with External MongoDB)
+Set the `MONGO_ADMIN_URI` environment variable and run:
+```bash
+npm start
 ```
 
 ### Mesh Router
@@ -94,3 +102,5 @@ node mesh-router.js
   - Updated default port from 6060/4343 to 5000
   - Upgraded restify to v11 for Node.js 20 compatibility
   - Created .gitignore for Node.js
+  - Added dev-server.js with mongodb-memory-server for local testing
+  - Added `npm run dev` script for development mode
