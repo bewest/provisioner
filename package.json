@@ -15,12 +15,15 @@
   "dependencies": {
     "bootevent": "0.0.1",
     "bunyan": "^1.4.0",
+    "chai": "^6.2.2",
+    "mocha": "^11.7.5",
     "mongodb-memory-server": "^11.0.1",
     "mongoose": "^6.2.1",
     "mongoose-encrypt": "0.0.1-alpha.3",
     "mongoose-paginate-v2": "^1.7.4",
     "request": "^2.60.0",
-    "restify": "^11.1.0"
+    "restify": "^11.1.0",
+    "supertest": "^7.2.2"
   },
   "description": "Used to allocate resources for accounts.",
   "repository": {
@@ -30,5 +33,8 @@
   "bugs": {
     "url": "https://github.com/NightscoutFoundation/provisioner/issues"
   },
-  "homepage": "https://github.com/NightscoutFoundation/provisioner"
+  "homepage": "https://github.com/NightscoutFoundation/provisioner",
+  "devDependencies": {
+    "nock": "^14.0.10"
+  }
 }
