@@ -156,6 +156,14 @@ describe('Sites API', function() {
       expect(res.status).to.be.oneOf([400, 500]);
     });
 
+    it('should fail if api_secret is missing', async function() {
+      const res = await request(server)
+        .post(`/accounts/${testAccount.account}/sites/mysite`)
+        .send({ internal_name: 'testint' });
+      
+      expect(res.status).to.be.oneOf([400, 500]);
+    });
+
     it('should set Nightscout-specific defaults', async function() {
       let capturedBody = null;
       
