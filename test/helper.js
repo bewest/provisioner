@@ -125,7 +125,7 @@ async function createTestAccount(request, server, accountData = {}) {
   const res = await request(server)
     .post('/accounts')
     .send(accountData)
-    .expect(200);
+    .expect(201);
   return res.body;
 }
 
