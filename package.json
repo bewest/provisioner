@@ -3,7 +3,10 @@
   "version": "0.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha 'test/**/*.test.js' --timeout 10000",
+    "test:accounts": "mocha 'test/accounts.test.js' --timeout 10000",
+    "test:sites": "mocha 'test/sites.test.js' --timeout 10000",
+    "test:mesh": "mocha 'test/mesh-router.test.js' --timeout 10000",
     "start": "node server.js",
     "dev": "node dev-server.js"
   },

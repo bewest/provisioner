@@ -188,7 +188,58 @@ npm start
 node mesh-router.js
 ```
 
+## Testing
+
+### Test Suite Structure
+
+The `test/` directory contains skeleton test files with implementation guidance:
+
+```
+test/
+├── README.md           # Setup instructions and implementation notes
+├── helper.js           # Shared utilities (MongoDB setup, mocks)
+├── accounts.test.js    # Account and User API tests
+├── sites.test.js       # Site creation with compute forwarding tests
+└── mesh-router.test.js # Mesh routing and load balancing tests
+```
+
+### Running Tests
+
+First install test dependencies:
+```bash
+npm install --save-dev mocha chai supertest nock
+```
+
+Then run tests:
+```bash
+npm test                # Run all tests
+npm run test:accounts   # Account/User tests only
+npm run test:sites      # Sites tests only
+npm run test:mesh       # Mesh router tests only
+```
+
+### Test Implementation Status
+
+The test files are **skeletons with TODOs** - they provide:
+- Test structure and organization
+- Detailed implementation hints
+- Code examples for reference
+- Known issues to address
+
+See `test/README.md` for full implementation guide.
+
+### Key Testing Challenges
+
+1. **Compute API Mocking**: Sites endpoints call `MULTI_ENV_API` - use `nock` to mock
+2. **Encryption Keys**: Set `KEY_PREFIX_0` for credential encryption tests
+3. **Separate Servers**: `server.js` and `mesh-router.js` need separate test setups
+
 ## Recent Changes
+- 2026-01-09: Test suite skeleton added
+  - Created test/ directory with skeleton test files for accounts, sites, and mesh-router
+  - Added test helper with setup utilities and implementation guidance
+  - Added npm test scripts (test, test:accounts, test:sites, test:mesh)
+  - Documented testing approach and known challenges in test/README.md
 - 2026-01-09: Documentation improvements
   - Expanded README.md with architecture diagrams and tenant isolation model
   - Updated openapi.yaml /sites endpoints with detailed compute forwarding descriptions
