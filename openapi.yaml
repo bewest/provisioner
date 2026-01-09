@@ -341,7 +341,8 @@ paths:
       summary: Get list of managed sites for associated account.
       operationId: get_sites_for_account
       description: >-
-         Get list of managed sites for associated account.
+         Get list of managed sites for associated account. Each site represents
+         a Nightscout deployment with its own database credentials and collection prefixes.
       responses:
         '200':
           description: successful operation
@@ -350,19 +351,39 @@ paths:
         - account
         - site
       summary: Create a new managed site for associated account.
-      description: >-
-         Create a new managed site for associated account.
       operationId: create_sites_for_account
+      description: >-
+        Creates a new managed site with complete tenant isolation. This endpoint
+        performs a multi-step workflow:
+        
+        1. **User Creation**: Creates a new MongoDB user with credentials scoped to the account's database
+        
+        2. **Configuration Generation**: Builds the site configuration including:
+           - MongoDB connection string with the new user credentials
+           - Unique collection prefixes for tenant data isolation (entries, settings, treatments, profile, devicestatus)
+           - MQTT connection details (if configured)
+           - Nightscout-specific environment variables (API_SECRET, DBSIZE_MAX, etc.)
+        
+        3. **Compute Forwarding**: Forwards the configuration to the node-multienv compute component
+           via `POST {MULTI_ENV_API}/environs/{sitename}` to deploy the Nightscout application instance.
+        
+        The response includes both the provisioner's stored site record and the compute component's
+        response in the `proc` field.
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/SiteCreationInput'
-        description: Input to create credemtials for a DB.
+        description: >-
+          Configuration input for the new site. The `internal_name` is used to generate
+          unique collection prefixes. The `api_secret` becomes the Nightscout API_SECRET.
+          The `uploader_prefix` is used for MQTT authentication.
         required: true
       responses:
         '200':
-          description: successful operation
+          description: >-
+            Site created successfully. Response includes the user record with encrypted
+            credentials and a `proc` field containing the compute component's response.
   '/accounts/{account}/sites/{site}':
     parameters:
       - in: path
@@ -372,7 +393,7 @@ paths:
           type: string
         required: true
       - in: path
-        description: "Site Name."
+        description: "Site name (sitename field of the User record associated with this site)"
         name: site
         schema:
           type: string
@@ -381,47 +402,70 @@ paths:
       tags:
         - account
         - site
-      summary: Get managed site by id for associated account.
+      summary: Get managed site details including compute status.
       operationId: get_site_for_account_by_site_id
       description: >-
-         Get managed site by id for associated account.
+        Retrieves the site record from the provisioner database and queries the
+        node-multienv compute component for the current process status.
+        
+        The response includes:
+        - **Site credentials**: MongoDB user and connection details (encrypted)
+        - **Site configuration**: Collection prefixes and settings
+        - **proc**: Live status from the compute component via `GET {MULTI_ENV_API}/environs/{sitename}`
+        
+        This is useful for checking if a Nightscout instance is running and its current configuration.
       responses:
         '200':
-          description: successful operation
+          description: Site details with compute component status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteWithProc'
     delete:
       tags:
         - account
         - site
-      summary: Delete managed site by id for associated account.
-      description: >-
-         Delete managed site by id for associated account.
+      summary: Delete managed site and its compute resources.
       operationId: delete_site_for_account_by_site_id
+      description: >-
+        Deletes the site by:
+        
+        1. **Compute Cleanup**: Sends `DELETE {MULTI_ENV_API}/environs/{sitename}` to stop the Nightscout instance
+        2. **User Record Removal**: Removes the User record from the provisioner database
+        
+        Note: This does NOT delete the underlying account or database - only the site-specific
+        provisioner record and the compute resources. The MongoDB credentials stored in the
+        admin database may need separate cleanup.
       responses:
-        '200':
-          description: successful operation
+        '204':
+          description: >-
+            Site deleted successfully. Note: The handler sets 204 status but the format
+            middleware may still emit a body with deletion results.
     post:
       tags:
         - account
         - site
-      summary: Update a managed site by id for associated account.
+      summary: Create or update a site with a specific name.
       operationId: update_site_for_account_by_site_id
       description: >-
-         Update a managed site by id for associated account.
+        Creates a new site with the specified name, or updates an existing one.
+        This follows the same workflow as POST /accounts/{account}/sites but allows
+        specifying the exact site name in the URL path.
+        
+        If a user with this sitename already exists, the old credentials are removed
+        before creating new ones. The configuration is then forwarded to the compute
+        component to deploy or update the Nightscout instance.
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/SiteCreationInput'
-        description: Input to create credemtials for a DB.
+        description: >-
+          Configuration for the site. See POST /accounts/{account}/sites for field descriptions.
         required: true
       responses:
         '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                $ref: '#/components/schemas/Site'
+          description: Site created or updated successfully
   '/routes':
     get:
       tags:
@@ -695,23 +739,58 @@ components:
           description: Mongo status response.
     SiteCreationInput:
       type: object
-      description: Managed site consuming a database.
+      description: >-
+        Input configuration for creating a managed Nightscout site. This data is used to:
+        (1) Create MongoDB user credentials, (2) Generate unique collection prefixes for
+        tenant isolation, and (3) Configure the environment that gets forwarded to the
+        compute component (node-multienv).
+      required:
+        - internal_name
+        - api_secret
       properties:
         internal_name:
-          description: Internally unique Name record.
+          description: >-
+            Internally unique identifier used to generate collection prefixes.
+            The prefix pattern is: {COLLECTION_PREFIX}{internal_name}.i.{collection_name}
+            This ensures each tenant's data is stored in isolated collections.
           type: string
+          example: "abc123"
         salter:
           type: string
-          description: Some random input associated with record.
+          description: >-
+            Random salt value used in credential generation. Defaults to "pepper" if not provided.
+            Used as part of the account association for the created user.
+          default: "pepper"
         name:
-          description: Defined name.
+          description: >-
+            Human-readable name for the site. Used for display purposes and may be used
+            as the sitename if no explicit sitename is provided in the URL path.
           type: string
         api_secret:
-          description: API Secret for this site.
+          description: >-
+            The Nightscout API_SECRET for this site. This becomes the authentication
+            secret for the Nightscout application instance. Should be a secure, random string.
           type: string
+          format: password
         uploader_prefix:
-          description: Prefix to use for uploaders.
+          description: >-
+            Prefix used for MQTT uploader authentication. Combined with api_secret to form
+            the MQTT credentials: {uploader_prefix}:{api_secret}@{MQTT_DOMAIN}
           type: string
+
+    SiteWithProc:
+      type: object
+      description: Site details including live status from the compute component.
+      allOf:
+        - $ref: '#/components/schemas/User'
+        - type: object
+          properties:
+            proc:
+              type: object
+              description: >-
+                Live status from the compute component via GET {MULTI_ENV_API}/environs/{sitename}.
+                Contains the current process state, environment configuration, and runtime details.
+              additionalProperties: true
     UserPagination:
       type: object
       properties:

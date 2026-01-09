@@ -62,7 +62,10 @@ The recent architecture enables multiple clusters of MongoDB to act as a unified
 - `DELETE /accounts/:account` - Delete account
 - `GET /accounts/:account/users` - List users for account
 - `POST /accounts/:account/users` - Create user for account
-- `POST /accounts/:account/sites/:name` - Create site for account
+- `POST /accounts/:account/sites` - Create site for account (auto-generates sitename)
+- `POST /accounts/:account/sites/:name` - Create site with specific name
+- `GET /accounts/:account/sites/:site` - Get site details with compute status
+- `DELETE /accounts/:account/sites/:site` - Delete site and compute resources
 
 ### Mesh Router (mesh-router.js)
 - `GET /routes` - Get route statistics by backend
@@ -76,6 +79,94 @@ The recent architecture enables multiple clusters of MongoDB to act as a unified
 - `POST /storage/assignment/creation` - Create new storage assignment
 - `POST /storage/conductor` - Conductor endpoint for load balancer integration
 - `GET /storage/conductor/:account` - Get conductor info for account
+
+## /sites Compute Forwarding
+
+The `/sites` endpoints implement a key integration between the provisioner (storage) and node-multienv (compute) components. When a site is created, the provisioner doesn't just store credentials—it also forwards configuration to the compute component to deploy a Nightscout application instance.
+
+### Site Creation Flow
+
+The actual middleware chain for `POST /accounts/:account/sites/:name`:
+
+```
+POST /accounts/:account/sites/:name
+         │
+         ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│ 1. account.by_account                                               │
+│    └── Validate account exists, attach to req.account              │
+├─────────────────────────────────────────────────────────────────────┤
+│ 2. user.suggest                                                     │
+│    └── Generate username/password for MongoDB access               │
+├─────────────────────────────────────────────────────────────────────┤
+│ 3. user.lookup_prexists                                             │
+│    └── Check if user already exists with this sitename             │
+├─────────────────────────────────────────────────────────────────────┤
+│ 4. admin.adminUser                                                  │
+│    └── Attach admin context for credential operations              │
+├─────────────────────────────────────────────────────────────────────┤
+│ 5. user.remove_by_user                                              │
+│    └── If pre-existing user found, remove old record               │
+├─────────────────────────────────────────────────────────────────────┤
+│ 6. user.create                                                      │
+│    └── Create MongoDB user in admin DB, store encrypted creds      │
+├─────────────────────────────────────────────────────────────────────┤
+│ 7. sites.suggest                                                    │
+│    └── Build configuration object (see below)                      │
+├─────────────────────────────────────────────────────────────────────┤
+│ 8. sites.create                                                     │
+│    └── POST to {MULTI_ENV_API}/environs/{sitename}                 │
+│        with req.suggested configuration                             │
+├─────────────────────────────────────────────────────────────────────┤
+│ 9. sites.format                                                     │
+│    └── Return user record + proc (compute response)                │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Configuration Object (req.suggested)
+
+The `sites.suggest` middleware builds this configuration that gets forwarded to the compute component:
+
+```javascript
+{
+  mongo: "mongodb://user:pass@host/dbname?authSource=admin&args",
+  internal_name: "abc123",
+  MONGO_COLLECTION: "prefix.abc123.i.entries",
+  MONGO_SETTINGS_COLLECTION: "prefix.abc123.i.settings",
+  MONGO_TREATMENTS_COLLECTION: "prefix.abc123.i.treatments",
+  MONGO_PROFILE_COLLECTION: "prefix.abc123.i.profile",
+  MONGO_DEVICESTATUS_COLLECTION: "prefix.abc123.i.devicestatus",
+  MQTT_MONITOR: "tcp://uploader:secret@mqtt.domain",
+  API_SECRET: "user-provided-secret",
+  INSECURE_USE_HTTP: "true",
+  DBSIZE_MAX: "1984",
+  ADMIN_NOTIFIES_ENABLED: "false"
+}
+```
+
+### Tenant Isolation via Collection Prefixes
+
+Each site gets unique collection names using the pattern:
+```
+{COLLECTION_PREFIX}{internal_name}.i.{collection_name}
+```
+
+This ensures complete data isolation between tenants sharing the same MongoDB database.
+
+### Site Query with Compute Status
+
+When querying a site via `GET /accounts/:account/sites/:site`, the provisioner:
+1. Looks up the User record by sitename
+2. Calls `GET {MULTI_ENV_API}/environs/{sitename}` to get live process status
+3. Returns both records merged with the compute status in the `proc` field
+
+### Site Deletion
+
+When deleting via `DELETE /accounts/:account/sites/:site`:
+1. Calls `DELETE {MULTI_ENV_API}/environs/{sitename}` to stop the compute instance
+2. Removes the User record from the provisioner database
+
+Note: The MongoDB credentials created in the admin database are handled via the `removeUser` callback but may require separate administrative cleanup in some configurations.
 
 ## Running the Server
 
@@ -98,6 +189,11 @@ node mesh-router.js
 ```
 
 ## Recent Changes
+- 2026-01-09: Documentation improvements
+  - Expanded README.md with architecture diagrams and tenant isolation model
+  - Updated openapi.yaml /sites endpoints with detailed compute forwarding descriptions
+  - Added SiteWithProc schema to openapi.yaml for GET /sites/:site responses
+  - Added /sites compute forwarding section to replit.md with middleware chain flow diagrams
 - 2026-01-09: Initialized for Replit environment
   - Updated default port from 6060/4343 to 5000
   - Upgraded restify to v11 for Node.js 20 compatibility
